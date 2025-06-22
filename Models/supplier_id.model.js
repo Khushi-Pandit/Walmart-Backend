@@ -20,6 +20,6 @@ const supplierIdSchema = new mongoose.Schema({
     },
 });
 
-const SupplierId = mongoose.model('SupplierId', supplierIdSchema);
+const Supplier = mongoose.model('Supplier', supplierIdSchema);
 
-module.exports = SupplierId;
+module.exports = Supplier;
