@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const walmartStoreSchema = new mongoose.Schema({
-    storeName: {
+    name: {
         type: String,
         required: true,
         trim: true
     },
-    storeLocation: {
+    location: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Location',
         required: true,

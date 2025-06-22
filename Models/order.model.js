@@ -49,4 +49,12 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Location"
     }],
+    currentLocation: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Location",
+        required: true
+    },
 });
+
+const Order = mongoose.model("Order", orderSchema);
+module.exports = Order;
