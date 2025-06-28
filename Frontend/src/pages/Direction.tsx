@@ -184,6 +184,11 @@ export default function RouteMap() {
         <div>
           <h1 className="text-3xl font-bold mb-2">Route Dashboard</h1>
           <p className="text-gray-400 text-sm">Select routes to visualize them on the map.</p>
+          <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+            <a href='/Home' className="flex items-center gap-2">
+            Home
+            </a>
+          </button>
         </div>
 
         <div className="space-y-3 overflow-auto">

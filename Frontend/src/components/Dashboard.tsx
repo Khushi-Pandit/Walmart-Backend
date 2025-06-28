@@ -32,6 +32,11 @@ export const Dashboard: React.FC = () => {
           <p className="text-gray-600 text-lg">
             Monitor real-time shipment status and delivery routes
           </p>
+          <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+            <a href='/Direction' className="flex items-center gap-2">
+            Map Routes
+            </a>
+          </button>
         </div>
 
         {/* Stats Cards */}
