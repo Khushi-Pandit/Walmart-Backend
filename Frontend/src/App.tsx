@@ -4,8 +4,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import Home from './pages/Home';
 import Products from './pages/Products';
-import Test from './pages/Test'; // 👈 ADD THIS LINE
+// import Test from './pages/Test'; // 👈 ADD THIS LINE
 import OlaMapPlayground from './components/OlaMapPlayground'; // 👈 ADD THIS LINE
+import Direction from './pages/Direction'; // 👈 ADD THIS LINE
 
 function App() {
   return (
@@ -14,9 +15,8 @@ function App() {
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<Home />} />
         <Route path="/products" element={<Products />} />
-        <Route path="/test" element={<Test />} />
-        {/* Add more routes as needed */}
-<Route path="/playground" element={<OlaMapPlayground />} />
+        
+        <Route path="/direction" element={<Direction />} />
       </Routes>
     </Router>
   );
