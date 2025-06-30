@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import axios from 'axios';
@@ -6,7 +6,7 @@ import { MapPin } from 'lucide-react';
 import type { ShipmentOrder } from '../data/mockData';
 
 // Fix for default markers in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -18,37 +18,33 @@ interface MapViewProps {
   selectedOrderId: string | null;
 }
 
-const createCustomIcon = (color: string) => {
-  return L.divIcon({
+const createCustomIcon = (color: string) =>
+  L.divIcon({
     html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
     className: 'custom-marker',
     iconSize: [20, 20],
-    iconAnchor: [10, 10]
+    iconAnchor: [10, 10],
   });
-};
 
 const supplierIcon = createCustomIcon('#f97316');
 const storeIcon = createCustomIcon('#3b82f6');
 
-const getRouteColor = (riskLevel: number) => {
-  if (riskLevel > 0.7) return '#ef4444';
-  if (riskLevel > 0.4) return '#f97316';
-  return '#22c55e';
-};
-
-const MapController: React.FC<{ selectedOrderId: string | null; orders: ShipmentOrder[] }> = ({ selectedOrderId, orders }) => {
+const MapController: React.FC<{ selectedOrderId: string | null; orders: ShipmentOrder[] }> = ({
+  selectedOrderId,
+  orders,
+}) => {
   const map = useMap();
 
   useEffect(() => {
-    if (selectedOrderId) {
-      const selectedOrder = orders.find(order => order.id === selectedOrderId);
-      if (selectedOrder) {
-        const bounds = L.latLngBounds([
-          [selectedOrder.supplierLocation.lat, selectedOrder.supplierLocation.lng],
-          [selectedOrder.storeLocation.lat, selectedOrder.storeLocation.lng]
-        ]);
-        map.fitBounds(bounds, { padding: [50, 50] });
-      }
+    if (!selectedOrderId) return;
+
+    const selectedOrder = orders.find((order) => order.id === selectedOrderId);
+    if (selectedOrder) {
+      const bounds = L.latLngBounds([
+        [selectedOrder.supplierLocation.lat, selectedOrder.supplierLocation.lng],
+        [selectedOrder.storeLocation.lat, selectedOrder.storeLocation.lng],
+      ]);
+      map.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [selectedOrderId, orders, map]);
 
@@ -56,7 +52,6 @@ const MapController: React.FC<{ selectedOrderId: string | null; orders: Shipment
 };
 
 export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => {
-  const mapRef = useRef<L.Map | null>(null);
   const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
 
   useEffect(() => {
@@ -66,7 +61,7 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
         return;
       }
 
-      const selectedOrder = orders.find(order => order.id === selectedOrderId);
+      const selectedOrder = orders.find((order) => order.id === selectedOrderId);
       if (!selectedOrder) return;
 
       const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
@@ -78,7 +73,7 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
         const response = await axios.get(url);
         const features = response.data.features;
 
-        if (features && features.length > 0) {
+        if (features?.length > 0) {
           const geometry = features[0].geometry;
           let coords: [number, number][] = [];
 
@@ -87,12 +82,12 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
           } else if (geometry.type === 'MultiLineString') {
             coords = geometry.coordinates.flat().map(([lng, lat]: [number, number]) => [lat, lng]);
           } else {
-            console.warn("Unexpected geometry type:", geometry.type);
+            console.warn('Unexpected geometry type:', geometry.type);
           }
 
           setRouteCoords(coords);
         } else {
-          console.warn("No features found in route response", response.data);
+          console.warn('No features found in route response', response.data);
           setRouteCoords([]);
         }
       } catch (error) {
@@ -116,10 +111,9 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
 
       <div className="h-96 relative">
         <MapContainer
-          center={[39.8283, -98.5795]} // Center of USA
+          center={[39.8283, -98.5795]}
           zoom={4}
           className="h-full w-full"
-          ref={mapRef}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
