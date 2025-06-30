@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { MapPin, AlertTriangle, Clock } from 'lucide-react';
+import axios from 'axios';
+import { MapPin } from 'lucide-react';
 import type { ShipmentOrder } from '../data/mockData';
 
 // Fix for default markers in react-leaflet
@@ -19,9 +20,7 @@ interface MapViewProps {
 
 const createCustomIcon = (color: string) => {
   return L.divIcon({
-    html: `
-      <div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
-    `,
+    html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
     className: 'custom-marker',
     iconSize: [20, 20],
     iconAnchor: [10, 10]
@@ -39,7 +38,7 @@ const getRouteColor = (riskLevel: number) => {
 
 const MapController: React.FC<{ selectedOrderId: string | null; orders: ShipmentOrder[] }> = ({ selectedOrderId, orders }) => {
   const map = useMap();
-  
+
   useEffect(() => {
     if (selectedOrderId) {
       const selectedOrder = orders.find(order => order.id === selectedOrderId);
@@ -58,6 +57,52 @@ const MapController: React.FC<{ selectedOrderId: string | null; orders: Shipment
 
 export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => {
   const mapRef = useRef<L.Map | null>(null);
+  const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
+
+  useEffect(() => {
+    const fetchRoute = async () => {
+      if (!selectedOrderId) {
+        setRouteCoords([]);
+        return;
+      }
+
+      const selectedOrder = orders.find(order => order.id === selectedOrderId);
+      if (!selectedOrder) return;
+
+      const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
+      const { supplierLocation, storeLocation } = selectedOrder;
+      const waypoints = `${supplierLocation.lat},${supplierLocation.lng}|${storeLocation.lat},${storeLocation.lng}`;
+      const url = `https://api.geoapify.com/v1/routing?waypoints=${waypoints}&mode=drive&apiKey=${apiKey}`;
+
+      try {
+        const response = await axios.get(url);
+        const features = response.data.features;
+
+        if (features && features.length > 0) {
+          const geometry = features[0].geometry;
+          let coords: [number, number][] = [];
+
+          if (geometry.type === 'LineString') {
+            coords = geometry.coordinates.map(([lng, lat]: [number, number]) => [lat, lng]);
+          } else if (geometry.type === 'MultiLineString') {
+            coords = geometry.coordinates.flat().map(([lng, lat]: [number, number]) => [lat, lng]);
+          } else {
+            console.warn("Unexpected geometry type:", geometry.type);
+          }
+
+          setRouteCoords(coords);
+        } else {
+          console.warn("No features found in route response", response.data);
+          setRouteCoords([]);
+        }
+      } catch (error) {
+        console.error('Route fetch error:', error);
+        setRouteCoords([]);
+      }
+    };
+
+    fetchRoute();
+  }, [selectedOrderId, orders]);
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-full">
@@ -68,7 +113,7 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
         </h2>
         <p className="text-green-100 mt-1">Live tracking of order movements worldwide</p>
       </div>
-      
+
       <div className="h-96 relative">
         <MapContainer
           center={[39.8283, -98.5795]} // Center of USA
@@ -80,116 +125,48 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          
+
           <MapController selectedOrderId={selectedOrderId} orders={orders} />
-          
-          {orders.map((order) => {
-            const isSelected = selectedOrderId === order.id;
-            const routeColor = getRouteColor(order.riskLevel);
-            const lineWeight = isSelected ? 5 : 3;
-            const lineOpacity = isSelected ? 1 : 0.7;
-            
-            return (
-              <React.Fragment key={order.id}>
-                {/* Supplier Marker */}
-                <Marker
-                  position={[order.supplierLocation.lat, order.supplierLocation.lng]}
-                  icon={supplierIcon}
-                >
-                  <Popup>
-                    <div className="p-2">
-                      <h3 className="font-semibold text-orange-600">Supplier Location</h3>
-                      <p className="text-sm text-gray-600">{order.supplierLocation.city}</p>
-                      <p className="text-xs text-gray-500 mt-1">Order: {order.id}</p>
-                    </div>
-                  </Popup>
-                </Marker>
-                
-                {/* Store Marker */}
-                <Marker
-                  position={[order.storeLocation.lat, order.storeLocation.lng]}
-                  icon={storeIcon}
-                >
-                  <Popup>
-                    <div className="p-2">
-                      <h3 className="font-semibold text-blue-600">Walmart Store</h3>
-                      <p className="text-sm text-gray-600">{order.storeLocation.city}</p>
-                      <p className="text-xs text-gray-500 mt-1">Order: {order.id}</p>
-                    </div>
-                  </Popup>
-                </Marker>
-                
-                {/* Route Line */}
-                <Polyline
-                  positions={[
-                    [order.supplierLocation.lat, order.supplierLocation.lng],
-                    [order.storeLocation.lat, order.storeLocation.lng]
-                  ]}
-                  color={routeColor}
-                  weight={lineWeight}
-                  opacity={lineOpacity}
-                  className={isSelected ? 'animate-pulse' : ''}
-                >
-                  <Popup>
-                    <div className="p-3 min-w-[200px]">
-                      <h3 className="font-semibold text-gray-900 mb-2">{order.id}</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4 text-orange-500" />
-                          <span className="text-sm">Risk Level: {Math.round(order.riskLevel * 100)}%</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: routeColor }}></div>
-                          <span className="text-sm">{order.weatherCondition}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-blue-500" />
-                          <span className={`text-sm font-medium ${order.deliveryStatus === 'On time' ? 'text-green-600' : 'text-red-600'}`}>
-                            {order.deliveryStatus}
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-2">
-                          <div>From: {order.supplierLocation.city}</div>
-                          <div>To: {order.storeLocation.city}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </Popup>
-                </Polyline>
-              </React.Fragment>
-            );
-          })}
+
+          {orders.map((order) => (
+            <React.Fragment key={order.id}>
+              <Marker
+                position={[order.supplierLocation.lat, order.supplierLocation.lng]}
+                icon={supplierIcon}
+              >
+                <Popup>
+                  <div className="p-2">
+                    <h3 className="font-semibold text-orange-600">Supplier Location</h3>
+                    <p className="text-sm text-gray-600">{order.supplierLocation.city}</p>
+                    <p className="text-xs text-gray-500 mt-1">Order: {order.id}</p>
+                  </div>
+                </Popup>
+              </Marker>
+
+              <Marker
+                position={[order.storeLocation.lat, order.storeLocation.lng]}
+                icon={storeIcon}
+              >
+                <Popup>
+                  <div className="p-2">
+                    <h3 className="font-semibold text-blue-600">Walmart Store</h3>
+                    <p className="text-sm text-gray-600">{order.storeLocation.city}</p>
+                    <p className="text-xs text-gray-500 mt-1">Order: {order.id}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            </React.Fragment>
+          ))}
+
+          {routeCoords.length > 0 && (
+            <Polyline
+              positions={routeCoords}
+              color="#2563eb"
+              weight={5}
+              opacity={0.8}
+            />
+          )}
         </MapContainer>
-      </div>
-      
-      {/* Legend */}
-      <div className="px-8 py-4 bg-gray-50 border-t">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-              <span className="text-sm text-gray-600">Supplier</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-              <span className="text-sm text-gray-600">Walmart Store</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-1 bg-green-500 rounded"></div>
-              <span className="text-xs text-gray-500">Low Risk</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-1 bg-orange-500 rounded"></div>
-              <span className="text-xs text-gray-500">Medium Risk</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-1 bg-red-500 rounded"></div>
-              <span className="text-xs text-gray-500">High Risk</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
