@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import axios from 'axios';
-import { MapPin } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
 import type { ShipmentOrder } from '../data/mockData';
 
-// Fix for default markers in react-leaflet
+// Fix for default markers
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -53,6 +53,7 @@ const MapController: React.FC<{ selectedOrderId: string | null; orders: Shipment
 
 export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => {
   const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchRoute = async () => {
@@ -70,6 +71,7 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
       const url = `https://api.geoapify.com/v1/routing?waypoints=${waypoints}&mode=drive&apiKey=${apiKey}`;
 
       try {
+        setLoading(true);
         const response = await axios.get(url);
         const features = response.data.features;
 
@@ -93,6 +95,8 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
       } catch (error) {
         console.error('Route fetch error:', error);
         setRouteCoords([]);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -100,7 +104,7 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
   }, [selectedOrderId, orders]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-full">
+    <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-full relative">
       <div className="px-8 py-6 bg-gradient-to-r from-green-600 to-green-700">
         <h2 className="text-2xl font-bold text-white flex items-center gap-3">
           <MapPin className="w-7 h-7" />
@@ -161,6 +165,13 @@ export const MapView: React.FC<MapViewProps> = ({ orders, selectedOrderId }) => 
             />
           )}
         </MapContainer>
+
+        {/* ✅ Loading Overlay */}
+        {loading && (
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+            <Loader2 className="w-10 h-10 text-white animate-spin" />
+          </div>
+        )}
       </div>
     </div>
   );
