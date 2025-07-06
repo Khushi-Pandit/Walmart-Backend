@@ -1,4 +1,5 @@
-const getOrder = require('./orders.Controller/getOrders.Controller');
+const getShipments = require('./orders.Controller/getShipments.Controller');
+const getShipment = require('./orders.Controller/getShipment.Controller');
 const createOrder = require('./orders.Controller/createOrder.Controller');
 
 const getProduct = require('./product.Controller/getProduct.Controller');
@@ -11,7 +12,8 @@ const getWalmartStore = require('./walmartStore.Controller/getWalmartStore.Contr
 const createWalmartStore = require('./walmartStore.Controller/createWalmartStore.Controller');
 
 module.exports = {
-    getOrder,
+    getShipments,
+    getShipment,
     createOrder,
     getProduct,
     createProduct,

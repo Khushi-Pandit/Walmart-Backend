@@ -1,19 +1,20 @@
-const { getOrder, createOrder, getProduct, createProduct, getSupplier, createSupplier, getWalmartStore, createWalmartStore } = require("../Controller");
+const { getShipment, getShipments, createOrder, getProduct, createProduct, getSupplier, createSupplier, getWalmartStore, createWalmartStore } = require("../Controller");
 
 const router = require("express").Router();
 
 
 router.get("/", (req, res) => {
-    res.send("Welcome to the API");
+    res.send("Welcome to the Walmart Risk Dashboard Application");
 });
 
-router.get('/v1/api/orders', getOrder);
-router.post('/v1/api/orders', createOrder);
-router.get('/v1/api/products', getProduct);
-router.post('/v1/api/products', createProduct);
-router.get('/v1/api/suppliers', getSupplier);
-router.post('/v1/api/suppliers', createSupplier);
-router.get('/v1/api/walmartStores', getWalmartStore);
-router.post('/v1/api/walmartStores', createWalmartStore);
+router.get('/api/v1/shipments/get_all_shipments', getShipments);
+router.get('/api/v1/shipments', getShipment);
+router.post('/api/v1/shipments', createOrder);
+router.get('/api/v1/products', getProduct);
+router.post('/api/v1/products', createProduct);
+router.get('/api/v1/suppliers', getSupplier);
+router.post('/api/v1/suppliers', createSupplier);
+router.get('/api/v1/walmartStores', getWalmartStore);
+router.post('/api/v1/walmartStores', createWalmartStore);
 
 module.exports = router;
