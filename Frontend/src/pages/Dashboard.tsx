@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { shipments } from "./mockdata"; // Assuming this mockdata exists
 import RouteMap from "../components/RouteMap"; // Assuming
+import ShipmentsWidget from "../components/Shipments";
 
 const API_KEY = import.meta.env.VITE_OWS_KEY; // OpenWeatherMap API key from environment variables
 
@@ -124,6 +125,10 @@ const renderForecastSummary = (data: ForecastData | null) => {
     alert("Threshold settings applied!");
   };
 
+  const handleShipmentSelect = (shipment:  any) => {
+    setSelectedShipmentId(shipment);
+  };
+
   return (
     <div className="min-h-screen bg-gray-300 p-6 font-sans">
       <header className="mb-8">
@@ -132,7 +137,8 @@ const renderForecastSummary = (data: ForecastData | null) => {
       </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
-        <aside className="col-span-1 bg-white rounded-2xl shadow-lg p-5 overflow-y-auto max-h-[calc(100vh-50px)]">
+        <ShipmentsWidget onShipmentSelect={handleShipmentSelect} />
+        {/* <aside className="col-span-1 bg-white rounded-2xl shadow-lg p-5 overflow-y-auto max-h-[calc(100vh-50px)]">
           <h2 className="text-xl font-bold mb-5 text-gray-800">📦 Live Shipments</h2>
           {shipments.length > 0 ? (
             shipments.map((shipment) => (
@@ -163,7 +169,7 @@ const renderForecastSummary = (data: ForecastData | null) => {
           ) : (
             <div className="text-center text-gray-500 py-6">No shipments to display.</div>
           )}
-        </aside>
+        </aside> */}
 
         <main className="col-span-2 space-y-6">
           <div className="bg-white rounded-2xl shadow-lg p-5 h-[40vh] flex flex-col">
