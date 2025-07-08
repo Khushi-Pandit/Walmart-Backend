@@ -1,4 +1,5 @@
-const getOrder = require('./orders.Controller/getOrders.Controller');
+const getShipments = require('./orders.Controller/getShipments.Controller');
+const getShipment = require('./orders.Controller/getShipment.Controller');
 const createOrder = require('./orders.Controller/createOrder.Controller');
 
 const getProduct = require('./product.Controller/getProduct.Controller');
@@ -9,14 +10,17 @@ const createSupplier = require('./supplier.Controller/createSupplier.Controller'
 
 const getWalmartStore = require('./walmartStore.Controller/getWalmartStore.Controller');
 const createWalmartStore = require('./walmartStore.Controller/createWalmartStore.Controller');
+const getRouteWeather = require('./weather.Controller/getRouteWeather.Controller');
 
 module.exports = {
-    getOrder,
+    getShipments,
+    getShipment,
     createOrder,
     getProduct,
     createProduct,
     getSupplier,
     createSupplier,
     getWalmartStore,
-    createWalmartStore
+    createWalmartStore,
+    getRouteWeather
 };

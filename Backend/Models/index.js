@@ -1,15 +1,13 @@
-const Location = require('./location.model');
 const DeliveryAgent = require('./delivery_agent.model');
-const Supplier = require('./supplier_id.model');
+const Supplier = require('./supplier.model');
 const WalmartStore = require('./walmart_store.model');
-const Order = require('./order.model');
+const Shipment = require('./shipment.model');
 const Product = require('./product.model');
 
 module.exports = {
-    Location,
     DeliveryAgent,
     Supplier,
     WalmartStore,
-    Order,
+    Shipment,
     Product
 };
