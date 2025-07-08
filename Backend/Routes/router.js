@@ -1,4 +1,4 @@
-const { getShipment, getShipments, createOrder, getProduct, createProduct, getSupplier, createSupplier, getWalmartStore, createWalmartStore } = require("../Controller");
+const { getShipment, getShipments, createOrder, getProduct, createProduct, getSupplier, createSupplier, getWalmartStore, createWalmartStore, getRouteWeather } = require("../Controller");
 
 const router = require("express").Router();
 
@@ -10,6 +10,7 @@ router.get("/", (req, res) => {
 router.get('/api/v1/shipments/get_all_shipments', getShipments);
 router.get('/api/v1/shipments', getShipment);
 router.post('/api/v1/shipments', createOrder);
+router.post('/api/v1/weather/get_route_weather', getRouteWeather);
 router.get('/api/v1/products', getProduct);
 router.post('/api/v1/products', createProduct);
 router.get('/api/v1/suppliers', getSupplier);

@@ -10,6 +10,7 @@ const createSupplier = require('./supplier.Controller/createSupplier.Controller'
 
 const getWalmartStore = require('./walmartStore.Controller/getWalmartStore.Controller');
 const createWalmartStore = require('./walmartStore.Controller/createWalmartStore.Controller');
+const getRouteWeather = require('./weather.Controller/getRouteWeather.Controller');
 
 module.exports = {
     getShipments,
@@ -20,5 +21,6 @@ module.exports = {
     getSupplier,
     createSupplier,
     getWalmartStore,
-    createWalmartStore
+    createWalmartStore,
+    getRouteWeather
 };
