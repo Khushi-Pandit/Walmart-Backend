@@ -31,6 +31,7 @@ const Dashboard: React.FC = () => {
   const [productPriority, setProductPriority] = useState<string>("All Goods");
   const [weatherSummary, setWeatherSummary] = useState<WeatherSummary | null>(null);
   const [showThresholdSettings, setShowThresholdSettings] = useState<boolean>(false);
+  const [isMapFullscreen, setIsMapFullscreen] = useState<boolean>(false);
 
   const handleShipmentSelect = useCallback((shipment: Shipment | null) => {
     setSelectedShipment(shipment);
@@ -211,7 +212,7 @@ const Dashboard: React.FC = () => {
         {/* Main Content */}
         <main className="col-span-2 space-y-6">
           {/* Risk Map - Increased height */}
-          <div className="bg-white rounded-2xl shadow-lg p-5 h-[55vh] flex flex-col">
+          <div className={`bg-white rounded-2xl shadow-lg p-5 ${isMapFullscreen ? 'h-screen' : 'h-[55vh]'} flex flex-col`}>
             <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
               <MapPin size={24} className="mr-2 text-blue-600" />
               Risk Map
@@ -220,6 +221,8 @@ const Dashboard: React.FC = () => {
               <WeatherMapComponent 
                 shipment={selectedShipment} 
                 onWeatherSummary={handleWeatherSummary}
+                isFullscreen={isMapFullscreen}
+                onFullscreenChange={setIsMapFullscreen}
               />
             </div>
           </div>
